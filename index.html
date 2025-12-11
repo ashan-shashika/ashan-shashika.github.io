@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How I Started Writing Online - Ashan Writes</title>
+  <link rel="stylesheet" href="styles.css" />
+  <!-- KaTeX for mathematical notation -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body);"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+<body>
+  <!-- Top Navigation Bar -->
+  <!-- <header class="navbar">
+    <div class="navbar-container">
+      <div class="site-title">Ashan Writes</div>
+      <nav class="nav-links">
+        <a href="#" class="nav-link">Home</a>
+        <a href="#" class="nav-link">Articles</a>
+        <a href="#" class="nav-link">About</a>
+      </nav>
+    </div>
+  </header> -->
+
+  <main class="main-content">
+    <article class="article">
+      <h2>Binary Classification Using a Basic Neural Network </h2>
+
+      <div class="article-body">
+        <p>
+          Neural networks are powerful machine-learning models that learn from data by changing their internal
+          parameters. While they can develop into very large and complicated systems, at its core the learning is
+          structured around a clear sequence of steps. A neural network predicts using forward propagation, then
+          evaluates the accuracy of its predictions through a loss function, and finally updates weights, then biases so
+          future decisions are more correct.
+        </p>
+
+
+        <h3>
+          Introduction
+        </h3>
+        <p>
+          This article breaks down each step of this workflow in an easy-to-understand manner by demonstrating how a
+          neural network learns from data one tier at a time. It also demonstrates the differences in optimization
+          techniques used in parameter updates, such as basic gradient-descent and more complex variations like Adam,
+          which showcases learning efficiency and model performance.
+        </p>
+
+        <p>
+          To make the learning process easy to understand, let us consider the
+          following small dataset shown in the scatter plot below. Each point
+          has two input features, x and y, and belongs to one of two classes:
+          Class 0 or Class 1. Our task is to build a neural network that can
+          correctly classify these points based on their positions.
+        </p>
+
+        <div class="table-wrapper">
+          <table class="data-table" aria-label="Sample X Y output data">
+            <thead>
+              <tr>
+                <th scope="col">X</th>
+                <th scope="col">1</th>
+                <th scope="col">2</th>
+                <th scope="col">3</th>
+                <th scope="col">4</th>
+                <th scope="col">5</th>
+                <th scope="col">6</th>
+                <th scope="col">7</th>
+                <th scope="col">8</th>
+                <th scope="col">9</th>
+                <th scope="col">10</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">X</th>
+                <td>0.5</td>
+                <td>1.25</td>
+                <td>2</td>
+                <td>2.75</td>
+                <td>3.5</td>
+                <td>0.5</td>
+                <td>1.25</td>
+                <td>2</td>
+                <td>2.75</td>
+                <td>3.5</td>
+              </tr>
+              <tr>
+                <th scope="row">Y</th>
+                <td>1.3</td>
+                <td>0.9</td>
+                <td>0.7</td>
+                <td>0.9</td>
+                <td>1.25</td>
+                <td>1.7</td>
+                <td>1.4</td>
+                <td>1.2</td>
+                <td>1.35</td>
+                <td>1.7</td>
+              </tr>
+              <tr>
+                <th scope="row">Target</th>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>1</td>
+                <td>1</td>
+                <td>1</td>
+                <td>1</td>
+                <td>1</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <figure class="article-image-wrapper">
+          <img src="./images/scatter_plot.png" alt="Scatter plot" />
+          <figcaption>Binary Classification Data Distribution</figcaption>
+        </figure>
+        <p>
+          Since the dataset contains only two input features, two neurons are used in the input layer to represent them.
+          In practice, neural networks often require a larger number of hidden neurons to effectively learn complex
+          patterns. However, for the purpose of simplifying this illustrative example and clearly demonstrating how
+          information flows through the network, a single hidden layer with only two neurons is used. The network also
+          includes one output neuron for binary classification. Although this architecture is intentionally small, it is
+          sufficient to demonstrate the complete neural network workflow discussed in the following sections
+        </p>
+
+        <figure class="article-image-wrapper">
+          <img src="./images/nn.png" alt="Scatter plot" />
+          <figcaption>Binary Classification Neural Network</figcaption>
+        </figure>
+
+        <h3>Forward Propagation</h3>
+
+        <p>
+          At the beginning of training, the neural network has no prior knowledge about the data, so all weights and
+          biases are initialized with small random values. These initial values can change each time the model or code
+          is executed, and they may influence the training process and the final accuracy of the model. For the purpose
+          of this example, a fixed set of initial weights and biases is used below to clearly demonstrate the forward
+          and backward propagation calculations.
+        </p>
+
+
+
+        <div class="table-wrapper">
+          <table class="data-table" aria-label="Sample X Y output data">
+            <thead>
+              <tr>
+                <th scope="col">w1</th>
+                <th scope="col">w2</th>
+                <th scope="col">w3</th>
+                <th scope="col">w4</th>
+                <th scope="col">w5</th>
+                <th scope="col">w6</th>
+                <th scope="col">b1</th>
+                <th scope="col">b2</th>
+                <th scope="col">b0</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>0.1</td>
+                <td> -0.05</td>
+                <td>0.2</td>
+                <td>0.02</td>
+                <td>0.12</td>
+                <td>-0.08</td>
+                <td>0.01</td>
+                <td>-0.02</td>
+                <td> 0.02</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          Forward propagation combines inputs, weights, and biases using
+          matrix multiplication.
+        </p>
+        <div class="three-col" style="font-size: 80%">
+          <!-- W Matrix -->
+          <p>
+            \[ W = \begin{bmatrix} w_1 & w_2 \\ w_3 & w_4 \end{bmatrix} \]
+          </p>
+          <!-- X Vector -->
+          <p>\[ X = \begin{bmatrix} x_1 \\ x_2 \end{bmatrix} \]</p>
+          <!-- B Vector -->
+          <p>\[ B = \begin{bmatrix} b_1 \\ b_2 \end{bmatrix} \]</p>
+        </div>
+
+        <p style="font-size: 80%">
+          \[ \mathbf{W}\mathbf{X} + \mathbf{B} = \begin{bmatrix} w_{1} & w_{2}
+          \\ w_{3} & w_{4} \end{bmatrix} \begin{bmatrix} x_1 \\ x_2
+          \end{bmatrix} + \begin{bmatrix} b_1 \\ b_2 \end{bmatrix} \]
+        </p>
+
+        <h3>Hidden Nuerons Calculation</h3>
+
+        <div class="three-col" style="font-size: 80%">
+          <p>
+            \[ \begin{aligned} z_{1} &= w_1 x_1 + w_3 x_2 + b_1
+            \\ &= (0.10 \times 0.50) + (0.20 \times 1.30) + 0.01 \\ &= 0.32
+            \end{aligned} \]
+          </p>
+          <p>
+            \[ \begin{aligned} z_{2} &= w_2 x_1 + w_4 x_2 + b_2
+            \\ &= (-0.05 \times 0.50) + (0.02 \times 1.30) + 0.02 \\ &= -0.019
+            \end{aligned} \]
+          </p>
+        </div>
+        <p>
+          After calculating the hidden neuron inputs, they are passed through
+          the ReLU activation function(Nair and Hinton, 2010), which keeps positive values and turns
+          negative values into zero
+        </p>
+        <p style="font-size: 80%;">
+          \( \text{ReLU}(x) = \max(0, x) \)
+        </p>
+        <div class="three-col" style="font-size: 80%">
+          <p>\[ h_{1} = 0.32 \]</p>
+          <p>\[ h_{2} = 0 \]</p>
+        </div>
+
+        <h3>Output Nueron Calculation</h3>
+        <p>
+          For the output layer, we use the sigmoid activation function because
+          it produces values between 0 and 1, making it suitable for binary
+          classification. After calculating the weighted sum just like in the
+          hidden layer, the sigmoid function is applied to this value to
+          generate the final output as a probability.
+        </p>
+        <p style="font-size: 80%">\[ \sigma(x) = \frac{1}{1 + e^{-x}} \]</p>
+
+        <p>Lets find the output</p>
+        <div style="text-align: left; font-size: 80%">
+          \[ \begin{aligned} z_{o} &= (h_{1} \times w_5) +
+          (h_{2} \times w_6) + b_3 \\ &= (0.32 \times 0.12) + (0
+          \times -0.08) + 0.02 \\ &= 0.0384 + 0 + 0.02 \\ &= 0.0584 \\ \\
+          \text{Sigmoid}(z_{o}) &= \frac{1}{1 + e^{-0.0584}} \\ &\approx 0.5146
+          \end{aligned} \]
+        </div>
+
+        <h3>Loss Calculation for Output Prediction</h3>
+
+        <p>
+          Here, we calculate the binary cross-entropy loss for the first input
+          using the true label y = 0 and the model’s predicted output ŷ =
+          0.5146
+        </p>
+
+        <div class="three-col">
+          <div style="text-align: left; font-size: 80%">
+            \[ \begin{aligned} L &= -\left( y \ln(\hat{y}) + (1 - y)\ln(1 -
+            \hat{y}) \right) \\ \\ L &= -\left( 0 \cdot \ln(0.5146) + (1 -
+            0)\ln(1 - 0.5146) \right) \\ \\ L &= -\ln(0.4851) \\ \\ L &\approx
+            0.7227 \end{aligned} \]
+          </div>
+          <div style="text-align: left; font-size: 80%">
+            \[ \begin{aligned} L &= \text{Binary Cross-Entropy Loss} \\ y &=
+            \text{True label} \\ \hat{y} &= \text{Predicted output}
+            \end{aligned} \]
+          </div>
+        </div>
+
+        <h3>Backpropagation</h3>
+
+        <p>
+          The loss function does not depend on the weights and bias of the output neuron. The loss depends upon the
+          predicted output, which depends upon weights and bias. Therefore, to compute the gradients of the loss
+          concerning the weights and bias, the chain rule of differentiation is applied. This properly propagates the
+          error from the loss function back to the parameters of the output layer.
+        </p>
+        <p>
+          Directly, the hidden layer does not contribute to a loss function; the hidden neurons influence the loss only
+          through the output neuron. So, the error at the hidden layer is computed from the output error and the
+          corresponding weights, using the chain rule. Once these hidden errors have been computed, the gradients of the
+          hidden layer weights and biases are determined, using the hidden errors and input values. This backward flow
+          of dependency is the basic principle of backpropagation.
+        </p>
+
+        <p>
+          Using the formula for the sigmoid and binary cross-entropy (Zhang, 2004), we can find that the gradient of the
+          loss with respect to the output neuron is ŷ - y, and this value will be used to calculate updates for the
+          output-layer weights and bias. Errors are propagated back toward the hidden layer. Because the hidden layer
+          utilizes ReLU, only neurons receiving positive inputs will obtain any gradients. Finally, these gradients are
+          then used to update the hidden-layer weights and biases to eventually minimize a network's error in the next
+          iteration.
+        </p>
+
+
+        <h3>Output Layer Gradients</h3>
+
+
+        <table class="data-table">
+          <tr>
+            <th>Description</th>
+            <td>Output Error</td>
+            <td>∂L / ∂W₅</td>
+            <td>∂L / ∂W₆</td>
+            <td>∂L / ∂b₀</td>
+          </tr>
+          <tr>
+            <th>Formula</th>
+            <td>\( \delta_o = ŷ - y \)</td>
+            <td>\( \frac{\partial L}{\partial W_5} = \delta_o h_1 \)</td>
+            <td>\( \frac{\partial L}{\partial W_6} = \delta_o h_2 \)</td>
+            <td>\( \frac{\partial L}{\partial b_0} = \delta_o \)</td>
+          </tr>
+          <tr>
+            <th>Value</th>
+            <td>0.5146</td>
+            <td>0.1647</td>
+            <td>0</td>
+            <td>0.5146</td>
+          </tr>
+        </table>
+
+
+        <h3>Hidden Layer Gradients</h3>
+
+        <p style="font-size: 80%;">
+          \( \delta_1 = \delta_o W_5 r_1 \), \( \delta_2 = \delta_o W_6 r_2 \), where \( r_1 \) and \( r_2 \) are the
+          derivatives of the hidden activation function.
+        </p>
+        <h4>Hidden Errors and Bias</h4>
+        <table class="data-table">
+          <tr>
+            <th>Term</th>
+            <td>δ₁</td>
+            <td>δ₂</td>
+            <td>∂L / ∂b₁</td>
+            <td>∂L / ∂b₂</td>
+          </tr>
+          <tr>
+            <th>Formula</th>
+            <td>\( \delta_1 = \delta_o W_5 r_1 \)</td>
+            <td>\( \delta_2 = \delta_o W_6 r_2 \)</td>
+            <td>\( \frac{\partial L}{\partial b_1} = \delta_1 \)</td>
+            <td>\( \frac{\partial L}{\partial b_2} = \delta_2 \)</td>
+          </tr>
+          <tr>
+            <th>Value</th>
+            <td>0.0168</td>
+            <td>0</td>
+            <td>0.0618</td>
+            <td>0</td>
+          </tr>
+        </table>
+        <br />
+
+        <h4>Hidden Weights</h4>
+        <table class="data-table">
+          <tr>
+            <th>Term</th>
+            <td>∂L / ∂W₁</td>
+            <td>∂L / ∂W₂</td>
+            <td>∂L / ∂W₃</td>
+            <td>∂L / ∂W₄</td>
+          </tr>
+          <tr>
+            <th>Formula</th>
+            <td>\( \frac{\partial L}{\partial W_1} = \delta_1 X_1 \)</td>
+            <td>\( \frac{\partial L}{\partial W_2} = \delta_2 X_1 \)</td>
+            <td>\( \frac{\partial L}{\partial W_3} = \delta_1 X_2 \)</td>
+            <td>\( \frac{\partial L}{\partial W_4} = \delta_2 X_2 \)</td>
+          </tr>
+          <tr>
+            <th>Value</th>
+            <td>0.0309</td>
+            <td>0</td>
+            <td>0.0803</td>
+            <td>0</td>
+          </tr>
+        </table>
+
+
+        <h3>Update Weights</h3>
+        <p>The gradient descent update rule is given by</p>
+        <p style="font-size: 80%;">
+          \[
+          W_{\text{new}} = W_{\text{old}} - \eta \cdot \frac{\partial L}{\partial W}
+          \]
+        </p>
+        <p>
+          This equation explains how a neural network updates its weights during training to reduce the error.
+          The gradient \( \frac{\partial L}{\partial W} \) shows how much a weight affects the loss,
+          while the learning rate \( \eta \) controls the size of each update step.
+          The gradient always points in the direction of increasing loss, so it is subtracted to move the weight
+          in the direction that minimizes the error. By repeatedly applying this rule after backpropagation,
+          the network gradually reduces the loss and improves its predictions.
+        </p>
+        <table class="data-table">
+          <tr>
+            <th></th>
+            <th>W1</th>
+            <th>W2</th>
+            <th>W3</th>
+            <th>W4</th>
+            <th>W5</th>
+            <th>W6</th>
+            <th>b1</th>
+            <th>b2</th>
+            <th>b0</th>
+          </tr>
+
+          <tr>
+            <th>Old Values</th>
+            <td>0.1</td>
+            <td>-0.05</td>
+            <td>0.2</td>
+            <td>0.02</td>
+            <td>0.12</td>
+            <td>-0.08</td>
+            <td>0.01</td>
+            <td>-0.02</td>
+            <td>0.02</td>
+          </tr>
+
+          <tr>
+            <th>New Values</th>
+            <td>0.0997</td>
+            <td>-0.05</td>
+            <td>0.1992</td>
+            <td>0.02</td>
+            <td>0.1184</td>
+            <td>-0.08</td>
+            <td>0.0094</td>
+            <td>-0.02</td>
+            <td>0.0149</td>
+          </tr>
+        </table>
+        <br />
+        <p>
+          After updating the weights using one step of gradient descent, the forward propagation is performed again with
+          the new parameters to compute the new loss.
+          The original loss before the update was \( L_{\text{old}} \approx 0.7227 \), and after the update, the new
+          loss became \( L_{\text{new}} \approx 0.7197 \).
+          Since the new loss is lower than the previous loss, this confirms that the weight update successfully moved
+          the model in the correct direction and improved its performance by reducing the prediction error.
+        </p>
+        <p>
+          If we increase the learning rate, the error may reduce faster because the updates become larger. However, if
+          the learning rate is too high, the optimizer can overshoot the minimum and may fail to converge to the optimal
+          solution.
+        </p>
+
+        <p>
+          So far, the calculations were shown for only one training example, but in real-world applications, a dataset
+          contains many rows of data. In the training, the model processes each row one by one: it performs a forward
+          propagation to generate a prediction, computes the loss, applies backpropagation to calculate gradients, and
+          updates weights. When all input rows in the dataset (say, 10 rows) have been processed once, one complete
+          epoch is said to be finished. For every epoch, the average loss is calculated across all training samples,
+          which gives an idea about the overall performance of the model rather than judging based on a single example.
+          At the same time, the accuracy of the model is calculated as the ratio of correct predictions versus the total
+          number of samples. This training is repeated for many epochs. Typically, the average loss decreases while the
+          accuracy increases, clearly indicating that the model learns from the data and improves over time.
+        </p>
+
+        <figure class="article-image-wrapper">
+          <img src="./images/epoch_vs_avgLoss.png" alt="decision boundary plot" />
+          <figcaption>Average Loss with Epoch</figcaption>
+        </figure>
+
+        <p>
+          If the average loss remains relatively high after several epochs, it indicates that the model is still not
+          learning the data patterns effectively and its predictions need further improvement. In such situations,
+          several adjustments can be made, such as increasing the number of epochs, tuning the learning rate, modifying
+          the network architecture, or improving the quality of the training data. However, one of the most effective
+          ways to improve performance is to use an adaptive optimizer such as Adam (Kingma and Ba, 2015)
+        </p>
+
+
+        <h3>Adam optimizer</h3>
+
+        <p style="font-size:80% ;">
+          \[
+          m_t = \beta_1 m_{t-1} + (1 - \beta_1) g_t
+          \]
+          \[
+          v_t = \beta_2 v_{t-1} + (1 - \beta_2) g_t^2
+          \]
+          \[
+          \hat{m}_t = \frac{m_t}{1 - \beta_1^t}
+          \]
+          \[
+          \hat{v}_t = \frac{v_t}{1 - \beta_2^t}
+          \]
+          \[
+          W_{\text{new}} = W_{\text{old}} - \eta \frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \epsilon}
+          \]
+        </p>
+        <p>
+          <strong>Parameter Definitions:</strong><br>
+          &bull; \( m_t \): Momentum term (smooths the gradient)<br>
+          &bull; \( v_t \): RMS term (controls step size)<br>
+          &bull; \( \beta_1, \beta_2 \): Exponential decay rates (commonly 0.9 and 0.999)<br>
+          &bull; \( \eta \): Learning rate<br>
+          &bull; \( \epsilon \): Small constant for numerical stability
+        </p>
+
+        <p>
+          In standard gradient descent, the same learning rate is applied to update all weights and biases, even though
+          some parameters may have a larger influence on the final output than others. Because of this, important
+          weights might update too slowly, while less important weights might update too quickly, which can slow down
+          training or make it unstable. To overcome this limitation, adaptive optimization algorithms such as Adam are
+          used. Adam automatically adjusts the learning rate separately for each weight based on past gradients,
+          allowing important parameters to learn faster while keeping other updates stable. This results in faster
+          convergence and more reliable training.
+        </p>
+
+        <p>
+          Comparison between the Stochastic Gradient Descent (SGD) and Adam optimization algorithms using a controlled
+          and consistent experimental setup. Both models were trained using the same neural network architecture (2
+          input neurons, 32 hidden neurons with ReLU activation, and 1 output neuron with sigmoid activation), the same
+          dataset, the same weight initialization, and the same number of training epochs (500). By keeping all these
+          factors constant and varying only the optimizer, a fair comparison is ensured. The performance of the two
+          optimizers is evaluated based on their training loss, training accuracy, and decision boundary visualization.
+        </p>
+        <figure class="article-image-wrapper">
+          <img src="./images/decision_boundary.png" alt="decision boundary plot" />
+          <figcaption>Decision Boundary Comparison</figcaption>
+        </figure>
+
+
+        <figure class="article-image-wrapper">
+          <img src="./images/loss_accuracy.png" alt="decision boundary plot" />
+          <figcaption>Loss and Accuracy Comparison</figcaption>
+        </figure>
+
+
+        <p>
+          Based on the graphs, we can clearly see that the Adam optimizer performs significantly better than SGD in both
+          convergence speed and final accuracy. The decision boundary plots show that Adam quickly learns a cleaner and
+          more accurate separation between the two classes, whereas SGD produces a decision boundary that is less
+          refined and converges more slowly. The training loss graph also demonstrates a major difference: Adam’s loss
+          decreases rapidly and reaches near-zero within a small number of epochs, while SGD decreases very slowly and
+          remains relatively high even after many epochs. A similar trend appears in the accuracy graph, where Adam
+          quickly achieves perfect accuracy, whereas SGD struggles to improve and stabilizes at a much lower accuracy
+          level. Overall, the graphs indicate that Adam’s adaptive learning rate and momentum enable it to learn faster,
+          adjust more effectively, and reach a better final solution compared to basic SGD.
+        </p>
+
+        <h3>Summary</h3>
+        <p>
+          This report presented a complete, step-by-step explanation of how a basic neural network learns from data
+          using forward propagation, loss calculation, backpropagation, and weight updates through gradient descent. A
+          simple binary classification dataset with two input features was used to clearly demonstrate how data flows
+          through the network, how predictions are generated, and how errors are calculated using the binary
+          cross-entropy loss function.
+        </p>
+        <p>
+          The internal learning process of the network was explained through detailed numerical calculations, including
+          weighted sums, activation functions (ReLU and sigmoid), gradient computation using the chain rule, and
+          parameter updates. This provided a clear mathematical foundation for understanding how neural networks improve
+          their predictions over time.
+        </p>
+        <p>
+          The report also investigated the significance of training for several epochs and explained how learning rate
+          values influence model performance and stability. Last, a comparison to the SGD method was performed with Adam
+          applied on the same setup. It was shown that Adam converges faster, has lower loss and higher accuracy than
+          the others because the adaptive learning rate and momentum based update.
+        </p>
+        <p>
+          Overall, this study confirms that while basic gradient descent is effective for learning, adaptive
+          optimization methods such as Adam significantly improve training efficiency and final model performance. The
+          concepts discussed in this report form the core foundation for many real-world machine learning applications,
+          including image classification, fraud detection, recommendation systems, and medical diagnosis.
+        </p>
+
+        <h3>References</h3>
+
+        <p>
+          Kingma, D.P. and Ba, J., 2015. <em>Adam: A method for stochastic optimization.</em>
+          International Conference on Learning Representations (ICLR).
+          <br />
+          Available at:
+          <a href="https://arxiv.org/pdf/1412.6980.pdf" target="_blank">
+            https://arxiv.org/pdf/1412.6980.pdf
+          </a>
+          [Accessed 10 December 2025].
+        </p>
+
+        <p>
+          Nair, V. and Hinton, G.E., 2010. <em>Rectified linear units improve restricted Boltzmann machines.</em>
+          Proceedings of the 27th International Conference on Machine Learning (ICML).
+          <br />
+          Available at:
+          <a href="https://www.cs.toronto.edu/~fritz/absps/reluICML.pdf" target="_blank">
+            https://www.cs.toronto.edu/~fritz/absps/reluICML.pdf
+          </a>
+          [Accessed 10 December 2025].
+        </p>
+
+        <p>
+          Zhang, Z., 2004. <em>Probabilistic outputs for support vector machines and comparisons to regularized
+            likelihood methods.</em>
+          Neural Computation, 16(6), pp.1189–1224.
+          <br />
+          Available at:
+          <a href="https://www.researchgate.net/publication/8134083_Probabilistic_Outputs_for_Support_Vector_Machines_and_Comparisons_to_Regularized_Likelihood_Methods"
+            target="_blank" style="word-break: break-all;">
+            https://www.researchgate.net/publication/8134083_Probabilistic_Outputs_for_Support_Vector_Machines_and_Comparisons_to_Regularized_Likelihood_Methods
+          </a>
+          [Accessed 10 December 2025].
+        </p>
+      </div>
+    </article>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>© 2025 Ashan. All rights reserved.</p>
+  </footer>
+</body>
+
+</html>
