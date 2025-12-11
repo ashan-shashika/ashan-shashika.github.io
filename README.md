@@ -37,8 +37,6 @@ The network is intentionally kept small to make the workflow easy to understand.
 - **Loss Function:** Binary Cross-Entropy  
 - **Optimizers:** SGD & Adam  
 
-> ⚠️ In practical scenarios, neural networks may require more hidden neurons for complex datasets.  
-> Here, only two hidden neurons are used for **simplicity and clarity**.
 
 ---
 
