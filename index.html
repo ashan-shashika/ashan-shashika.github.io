@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Binary Classification Using a Basic Neural Network</title>
+  <title>Binary Classification Using a Neural Network</title>
   <link rel="stylesheet" href="styles.css" />
   <!-- KaTeX for mathematical notation -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
@@ -29,7 +29,7 @@
 
   <main class="main-content">
     <article class="article">
-      <h2>Binary Classification Using a Basic Neural Network </h2>
+      <h2>Binary Classification Using a Neural Network </h2>
 
       <div class="article-body">
         <p>
@@ -291,6 +291,44 @@
           utilizes ReLU, only neurons receiving positive inputs will obtain any gradients. Finally, these gradients are
           then used to update the hidden-layer weights and biases to eventually minimize a network's error in the next
           iteration.
+        </p>
+
+        <p>Deriving the Output Layer Error Using the Chain Rule</p>
+        <p style="font-size: 80%;">
+          \[
+          \frac{\partial L}{\partial \hat{y}} = \frac{\hat{y} - y}{\hat{y}(1 - \hat{y})}
+          \]
+        </p>
+
+        <p style="font-size: 80%;">
+          \[
+          \hat{y} = \sigma(z_o), \qquad \frac{\partial \hat{y}}{\partial z_o} = \hat{y}(1 - \hat{y})
+          \]
+        </p>
+
+        <p style="font-size: 80%;">
+          \[
+          \frac{\partial L}{\partial z_o}
+          = \frac{\partial L}{\partial \hat{y}} \cdot
+          \frac{\partial \hat{y}}{\partial z_o}
+          \]
+        </p>
+
+        <p style="font-size: 80%;">
+          \[
+          \frac{\partial L}{\partial z_o}
+          =
+          \left(
+          \frac{\hat{y} - y}{\hat{y}(1 - \hat{y})}
+          \right)
+          (\hat{y}(1 - \hat{y}))
+          \]
+        </p>
+
+        <p style="font-size: 80%;">
+          \[
+          \delta_o = \frac{\partial L}{\partial z_o} = \hat{y} - y
+          \]
         </p>
 
 
